@@ -102,6 +102,7 @@ public class GlusterFileSystem extends FileSystem {
                 String  volName         = null;
                 String  remoteGFSServer = null;
                 String  needQuickRead   = null;
+                boolean autoMount       = true;
 
                 if (this.mounted)
                         return;
@@ -113,6 +114,7 @@ public class GlusterFileSystem extends FileSystem {
                         glusterMount = conf.get("fs.glusterfs.mount", "");
                         remoteGFSServer = conf.get("fs.glusterfs.server", "");
                         needQuickRead = conf.get("quick.slave.io", "");
+                        autoMount = conf.getBoolean("fs.glusterfs.automount", true);
 
                         /*
                          * bail out if we do not have enough information to do a FUSE
@@ -122,10 +124,12 @@ public class GlusterFileSystem extends FileSystem {
                              (glusterMount.length() == 0) )
                                 System.exit (-1);
 
-                        ret = FUSEMount(volName, remoteGFSServer, glusterMount);
-                        if (!ret) {
-                                System.out.println("Failed to initialize GlusterFS");
-                                System.exit(-1);
+                        if (autoMount) {
+                                ret = FUSEMount(volName, remoteGFSServer, glusterMount);
+                                if (!ret) {
+                                        System.out.println("Failed to initialize GlusterFS");
+                                        System.exit(-1);
+                                }
                         }
 
                         if ((needQuickRead.length() != 0)
